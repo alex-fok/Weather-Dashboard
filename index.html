@@ -1,11 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css"
+        integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+        crossorigin="anonymous"></script>
+    <title>Weather Dashboard</title>
+
 </head>
+
 <body>
-    
+    <header class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="navbar-brand m-auto">
+                <h1 class="text-light text-center">Weather Dashboard</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-fluid p-0">
+        <div class="row h-100">
+            <div class="col-3 h-100">
+                <div class="container-fluid" style="height: 550px; background-color: #eee" id="cityList">
+                    <div class="h-100 mb-3 p-1">
+                        <label for="searchField" class="form-label  mb-1">
+                            <h5>Search for a City:</h5>
+                        </label>
+                        <div class="input-group">
+                            <input type="search" class="form-control" id="searchInput">
+                            <button type="button" class="btn btn-primary" id="searchBtn">
+                                <span class="fa fa-search"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-8">
+                <div class="container" id="info">
+
+                </div>
+            </div>
+        </div>
+    </main>
 </body>
+
 </html>
