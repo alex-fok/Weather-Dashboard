@@ -1,3 +1,21 @@
+const updateCitiesDisplay = (cities) => {
+    const list = document.getElementById("cityList");
+    
+    // Clear current elements
+    while (list.hasChildNodes())
+        list.removeChild(list.firstChild)
+    
+    // Add children
+    cities.forEach(city => {
+        const entry = document.createElement("a");
+        entry.classList.add("list-group-item", "list-group-item-action", "city-list-item");
+        entry.setAttribute("href", `#${city}`);
+        entry.setAttribute("value", city);
+        entry.textContent = `${city.charAt(0).toUpperCase()}${city.slice(1)}`;
+        list.append(entry);
+    })
+}
+
 const updateWeatherDisplay = (weatherObj) => {
     console.log(weatherObj);
 }
@@ -42,17 +60,54 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
 }
 
 (() => {
-    document.getElementById("searchBtn").addEventListener("click", () => {
-        const city = document.getElementById("searchInput").value.toLocaleLowerCase("en-us").trim();
-        
-        if (!cities[city]) return;
+    // Get cityLlist variable from storage
+    const cityListString = localStorage.getItem("cityList");
+    let cityList = cityListString ? cityListString.split(",") : [];
 
+    const handleWeatherUpdate = (city) => {
         new Promise((resolve, reject) =>{
-            requestWeatherInfo(cities[city], config.APIKey, resolve, reject);
+            requestWeatherInfo(city, config.APIKey, resolve, reject);
         }).then(data => {
             updateWeatherDisplay(getWeatherObj(city, data));
         }).catch(msg => {
             console.log(msg);
         });
-    });
+    }
+
+    const initEventListeners = () => {
+        const updateList = (option, city) => {
+            if (option === "add") {
+                const length = cityList.unshift(city);
+
+                if (length > 10)
+                    cityList.pop();
+            } else {
+                const i = cityList.indexOf(city);
+
+                cityList = 
+                    i === 0 ? 
+                        cityList.shift(city)
+                    : i === cityList.length-1 ?
+                        cityList.pop(city) 
+                    : [...cityList.slice(0, i), ...cityList.slice(i + 1)];
+            }
+            localStorage.setItem("cityList", cityList.toString());
+            updateCitiesDisplay(cityList);
+        }
+
+        document.getElementById("searchBtn").addEventListener("click", () => {
+            const city = document.getElementById("searchInput").value.toLocaleLowerCase("en-us").trim();
+            
+            if (!cities[city]) return;
+       
+            // Update local storage
+            if (!cityList.includes(city))
+                updateList("add", city);
+
+            // Initialize ajax call
+            handleWeatherUpdate(city);            
+        });
+    }
+    updateCitiesDisplay(cityList);
+    initEventListeners();
 })();
