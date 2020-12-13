@@ -1,20 +1,11 @@
 const updateWeatherDisplay = (weatherObj) => {
-
+    console.log(weatherObj);
 }
 
 const getWeatherObj = (city, data) => {
     const {current, daily} = data;
 
     const getDate = (unixTime) => new Date(parseInt(unixTime)*1000).toLocaleDateString('en-US');
-
-    const getForecast = (days) => days.map(day => {
-        return({
-            "date": getDate(day.dt),
-            "icon": `http://openweathermap.org/img/wn/${day.weather[0].icon}.png`,
-            "temp": `${day.temp.day} \u2109`,
-            "humidity": `${day.humidity} %`
-        })
-    });
 
     return ({
         today: {
@@ -26,7 +17,14 @@ const getWeatherObj = (city, data) => {
             "windSpeed": `${current.wind_speed} MPH`,
             "uvi": `${current.uvi}`
         },
-        forecast: getForecast(daily.slice(1, 6))
+        forecast: daily.slice(1, 6).map(day => {
+            return({
+                "date": getDate(day.dt),
+                "icon": `http://openweathermap.org/img/wn/${day.weather[0].icon}.png`,
+                "temp": `${day.temp.day} \u2109`,
+                "humidity": `${day.humidity} %`
+            })
+        })
     })
 }
 
@@ -49,7 +47,7 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
         
         if (!cities[city]) return;
 
-        new Promise((resolve) =>{
+        new Promise((resolve, reject) =>{
             requestWeatherInfo(cities[city], config.APIKey, resolve, reject);
         }).then(data => {
             updateWeatherDisplay(getWeatherObj(city, data));
