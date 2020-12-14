@@ -1,4 +1,4 @@
-const changeMenuHeight = () => {
+const arrangeMenuHeight = () => {
     const menu = document.getElementById("menu");
     const weatherInfo = document.getElementById("weatherInfo");
 
@@ -19,8 +19,9 @@ const updateCitiesDisplay = (cities) => {
     cities.forEach(city => {
         const entry = document.createElement("a");
         entry.classList.add("list-group-item", "list-group-item-action", "city-list-item");
-        entry.setAttribute("href", `#${city}`);
+        //entry.setAttribute("href", `#${city}`);
         entry.setAttribute("value", city);
+        entry.setAttribute("style", "cursor: pointer");
         entry.textContent = `${city.charAt(0).toUpperCase()}${city.slice(1)}`;
         list.append(entry);
     })
@@ -193,50 +194,44 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
     // Get cityLlist variable from storage
     const cityListString = localStorage.getItem("cityList");
     let cityList = cityListString ? cityListString.split(",") : [];
-
+    
     const handleWeatherUpdate = (city) => {
         new Promise((resolve, reject) =>{
             requestWeatherInfo(cities[city], config.APIKey, resolve, reject);
         }).then(data => {
             updateWeatherDisplay(getWeatherObj(city, data));
-            changeMenuHeight();
+            arrangeMenuHeight();
         }).catch(msg => {
             console.log(msg);
         });
     }
 
-    const initEventListeners = () => {
-        const updateList = (option, city) => {
-            if (option === "add") {
-                const length = cityList.unshift(city);
-
-                if (length > 10)
-                    cityList.pop();
-            } else {
-                const i = cityList.indexOf(city);
-
-                cityList = 
-                    i === 0 ? 
-                        cityList.shift(city)
-                    : i === cityList.length-1 ?
-                        cityList.pop(city) 
-                    : [...cityList.slice(0, i), ...cityList.slice(i + 1)];
-            }
-            localStorage.setItem("cityList", cityList.toString());
-            updateCitiesDisplay(cityList);
+    const updateList = (option, city) => {
+        if (option === "add") {
+            const i = cityList.indexOf(city) + 1;
+            cityList.unshift(city);
+            if (i)
+                cityList = [...cityList.slice(0, i), ...cityList.slice(i + 1)];
+            else if (cityList.length > 10)
+                cityList.pop();
+        } else {
+            const i = cityList.indexOf(city);
+            cityList = [...cityList.slice(0, i), ...cityList.slice(i + 1)];
         }
+        localStorage.setItem("cityList", cityList.toString());
+        updateCitiesDisplay(cityList);
+    }
 
+    const initEventListeners = () => {
         document.getElementById("searchBtn").addEventListener("click", () => {
-            //const city = document.getElementById("searchInput").value.toLocaleLowerCase("en-us").trim();
-            const city = "seattle";
+            const city = document.getElementById("searchInput").value.toLocaleLowerCase("en-us").trim();
+            //const city = "seattle";
             if (!cities[city]) return;
        
             // Update local storage
-            if (!cityList.includes(city))
-                updateList("add", city);
-
+            updateList("add", city);
             // Initialize ajax call
-            handleWeatherUpdate(city);            
+            handleWeatherUpdate(city);
         });
     }
     updateCitiesDisplay(cityList);
