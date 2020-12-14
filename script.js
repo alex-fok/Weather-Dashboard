@@ -1,3 +1,9 @@
+const formatCityName = (name) => {
+    let copy = name.slice(1).split("");
+    copy = copy.map((char, i) => name[i] === " " ? char.toUpperCase() : char)
+    return [name[0].toUpperCase(), ...copy].join("");
+}
+
 const arrangeMenuHeight = () => {
     const menu = document.getElementById("menu");
     const weatherInfo = document.getElementById("weatherInfo");
@@ -8,7 +14,7 @@ const arrangeMenuHeight = () => {
         menu.classList.add("h-100");
 }
 
-const updateCitiesDisplay = (cities) => {
+const updateCitiesDisplay = (cities, handleWeatherUpdate, selected = "") => {
     const list = document.getElementById("cityList");
     
     // Clear current list elements
@@ -19,10 +25,20 @@ const updateCitiesDisplay = (cities) => {
     cities.forEach(city => {
         const entry = document.createElement("a");
         entry.classList.add("list-group-item", "list-group-item-action", "city-list-item");
-        //entry.setAttribute("href", `#${city}`);
-        entry.setAttribute("value", city);
+        if (city === selected)
+            entry.classList.add("active");
+
+        entry.setAttribute("data-city", city);
         entry.setAttribute("style", "cursor: pointer");
-        entry.textContent = `${city.charAt(0).toUpperCase()}${city.slice(1)}`;
+        entry.textContent = formatCityName(city);
+
+        entry.addEventListener("click", (event) => {
+            handleWeatherUpdate(event.target.dataset.city);
+            const active = document.querySelector(".list-group .city-list-item.active");
+            if (active)
+                active.classList.remove("active");
+            event.target.classList.add("active");
+        });
         list.append(entry);
     })
 }
@@ -68,6 +84,7 @@ const updateWeatherDisplay = (weatherObj) => {
         badge.textContent = uvi;
         return badge;
     }
+
     // Update display for current weather
     const updateWeatherCurrent = (today) => {
         const {name, date, icon, temp, humidity, windSpeed, uvi} = today;
@@ -81,8 +98,7 @@ const updateWeatherDisplay = (weatherObj) => {
         const cardBody = createLayoutEl("div", {"class": "card-body"});
 
         // City name, date, weather icon as title
-        const cityName = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
-        const titleEl = createTextEl("h2", `${cityName} (${date}) `, {"class": "card-title"});
+        const titleEl = createTextEl("h2", `${formatCityName(name)} (${date}) `, {"class": "card-title"});
         titleEl.appendChild(createIcon(icon));
 
         // Other weather info
@@ -200,7 +216,6 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
             requestWeatherInfo(cities[city], config.APIKey, resolve, reject);
         }).then(data => {
             updateWeatherDisplay(getWeatherObj(city, data));
-            arrangeMenuHeight();
         }).catch(msg => {
             console.log(msg);
         });
@@ -219,10 +234,11 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
             cityList = [...cityList.slice(0, i), ...cityList.slice(i + 1)];
         }
         localStorage.setItem("cityList", cityList.toString());
-        updateCitiesDisplay(cityList);
+        updateCitiesDisplay(cityList, handleWeatherUpdate, city);
     }
 
     const initEventListeners = () => {
+        // Handle event where user searches for a city
         document.getElementById("searchBtn").addEventListener("click", () => {
             const city = document.getElementById("searchInput").value.toLocaleLowerCase("en-us").trim();
             //const city = "seattle";
@@ -232,8 +248,13 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
             updateList("add", city);
             // Initialize ajax call
             handleWeatherUpdate(city);
+            document.getElementById("searchInput").blur();
         });
+        document.getElementById("searchInput").addEventListener("keydown", (event) => {
+            if (event.key === "Enter")
+                document.getElementById("searchBtn").click();
+        }) 
     }
-    updateCitiesDisplay(cityList);
+    updateCitiesDisplay(cityList, handleWeatherUpdate);
     initEventListeners();
 })();
