@@ -2,3 +2,9 @@
     font-size: 14px;
     color: white
 }
+
+@media (min-width: 768px){
+.content {
+    height: 476px
+}
+}

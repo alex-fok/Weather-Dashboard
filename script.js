@@ -4,16 +4,6 @@ const formatCityName = (name) => {
     return [name[0].toUpperCase(), ...copy].join("");
 }
 
-const arrangeMenuHeight = () => {
-    const menu = document.getElementById("menu");
-    const weatherInfo = document.getElementById("weatherInfo");
-
-    if (weatherInfo.hasChildNodes() && menu.classList.contains("h-100"))
-        menu.classList.remove("h-100");
-    else
-        menu.classList.add("h-100");
-}
-
 const updateCitiesDisplay = (cities, handleWeatherUpdate, selected = "") => {
     const list = document.getElementById("cityList");
     
