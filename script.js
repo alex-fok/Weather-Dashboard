@@ -1,38 +1,64 @@
+const CITY_LIST_MAX_LENGTH = 8;
+
+// Capitalize every word in city name
 const formatCityName = (name) => {
     let copy = name.slice(1).split("");
-    copy = copy.map((char, i) => name[i] === " " ? char.toUpperCase() : char)
-    return [name[0].toUpperCase(), ...copy].join("");
+    copy = copy.map((char, i) => name.charAt(i) === " " ? char.toUpperCase() : char)
+    return [name.charAt(0).toUpperCase(), ...copy].join("");
 }
 
-const updateCitiesDisplay = (cities, handleWeatherUpdate, selected = "") => {
-    const list = document.getElementById("cityList");
+// Update cityList variable in local storage
+const updateList = (option, cityArr, city) => {
+
+    const i = cityArr.indexOf(city);
+    let arr = option === "add" ? 
+        // if city already existed, move city to top
+        i >= 0 ?
+            [city, ...cityArr.slice(0, i), ...cityArr.slice(i + 1)]
+        // else if list is already full, remove oldest record on list and add in new entry
+        : cityArr.length === CITY_LIST_MAX_LENGTH ?
+            [city,...cityArr.slice(0, CITY_LIST_MAX_LENGTH - 1)]
+            // else combine 
+        : [city, ...cityArr]
+    // option === delete
+    : [...cityArr.slice(0, i), ...cityArr.slice(i + 1)];
+    
+    localStorage.setItem("cityList", arr.toString());
+    return arr; 
+}
+// Update city list in HTML
+const updateCitiesDisplay = (cityList, handleWeatherUpdate, selected = "") => {
+    const cityListEl = document.getElementById("cityList");
     
     // Clear current list elements
-    while (list.hasChildNodes())
-        list.removeChild(list.firstChild)
+    while (cityListEl.hasChildNodes())
+        cityListEl.removeChild(cityListEl.firstChild)
     
     // Add children
-    cities.forEach(city => {
+    cityList.forEach(city => {
         const entry = document.createElement("a");
         entry.classList.add("list-group-item", "list-group-item-action", "city-list-item");
-        if (city === selected)
+        if (city === selected) {
             entry.classList.add("active");
+            handleWeatherUpdate(city);
+        }
 
         entry.setAttribute("data-city", city);
         entry.setAttribute("style", "cursor: pointer");
         entry.textContent = formatCityName(city);
 
         entry.addEventListener("click", (event) => {
-            handleWeatherUpdate(event.target.dataset.city);
+            const name = event.target.dataset.city;
+            handleWeatherUpdate(name);
             const active = document.querySelector(".list-group .city-list-item.active");
             if (active)
                 active.classList.remove("active");
             event.target.classList.add("active");
         });
-        list.append(entry);
+        cityListEl.append(entry);
     })
 }
-
+// Update Weather Display in HTML
 const updateWeatherDisplay = (weatherObj) => {
     const info = document.getElementById("weatherInfo");
     
@@ -91,7 +117,7 @@ const updateWeatherDisplay = (weatherObj) => {
         const titleEl = createTextEl("h2", `${formatCityName(name)} (${date}) `, {"class": "card-title"});
         titleEl.appendChild(createIcon(icon));
 
-        // Other weather info
+        // Weather info
         const temperatureEl = createTextEl("p", `Temperature: ${temp} \u2109`, {"class": "card-text"});
         const humidityEl = createTextEl("p", `Humidity: ${humidity} %`, {"class": "card-text"});
         const windSpeedEl = createTextEl("p", `Wind Speed: ${windSpeed} MPH`, {"class": "card-text"});
@@ -108,8 +134,8 @@ const updateWeatherDisplay = (weatherObj) => {
     // Update display for weather forecast
     const updateWeatherForecast = (forecast) => {
         // Wrapper for forecast
-        const forecastRow = createLayoutEl("div", {"class": "row mx-0"});
-        const forecastCol = createLayoutEl("div", {"class": "col-sm mt-3 p-0"});
+        const forecastRow = createLayoutEl("div", {"class": "row mx-0 my-3"});
+        const forecastCol = createLayoutEl("div", {"class": "col-sm p-0"});
 
         // Inner container for forecast
         const innerContainer = createLayoutEl("div", {"class": "container-fluid px-0 mt-3"});
@@ -126,7 +152,7 @@ const updateWeatherDisplay = (weatherObj) => {
 
             // Wrapper, the card and the card body
             const cardWrapper = createLayoutEl("div", {"class": "col-sm-2 p-0 mx-0"});
-            const card = createLayoutEl("div", {"class": "card bg-primary"});
+            const card = createLayoutEl("div", {"class": "card bg-primary h-100"});
             const cardBody = createLayoutEl("div", {"class": "card-body p-2"});
             
             // Date and weather info
@@ -155,12 +181,12 @@ const updateWeatherDisplay = (weatherObj) => {
     updateWeatherCurrent(weatherObj.today);
     updateWeatherForecast(weatherObj.forecast);
     // Display weather info block
-    info.setAttribute("style", "display: block");
+    info.style.display = "block";
 }
-
+// Get weather object for page rendering
 const getWeatherObj = (city, data) => {
     const {current, daily} = data;
-    const getDate = (unixTime) => new Date(parseInt(unixTime)*1000).toLocaleDateString('en-US');
+    const getDate = (unixTime) => new Date(parseInt(unixTime)*1000).toLocaleDateString("en-US");
 
     return ({
         today: {
@@ -182,7 +208,7 @@ const getWeatherObj = (city, data) => {
         })
     })
 }
-
+// Make AJAX call to retrieve weather info
 const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
     const httpRequest = new XMLHttpRequest();
     const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${coord.lat}&lon=${coord.lon}&exclude=minutely,hourly,alerts&appid=${APIKey}&units=imperial`;
@@ -199,52 +225,41 @@ const requestWeatherInfo = (coord, APIKey, resolve, reject) => {
 (() => {
     // Get cityLlist variable from storage
     const cityListString = localStorage.getItem("cityList");
-    let cityList = cityListString ? cityListString.split(",") : [];
-    
+    let cityListArr = cityListString ? cityListString.split(",") : [];
+
+    // Request weather info, then update display
     const handleWeatherUpdate = (city) => {
         new Promise((resolve, reject) =>{
             requestWeatherInfo(cities[city], config.APIKey, resolve, reject);
         }).then(data => {
             updateWeatherDisplay(getWeatherObj(city, data));
+            localStorage.setItem("lastViewed", city);
         }).catch(msg => {
-            console.log(msg);
+            console.error(msg);
         });
-    }
-
-    const updateList = (option, city) => {
-        if (option === "add") {
-            const i = cityList.indexOf(city) + 1;
-            cityList.unshift(city);
-            if (i)
-                cityList = [...cityList.slice(0, i), ...cityList.slice(i + 1)];
-            else if (cityList.length > 10)
-                cityList.pop();
-        } else {
-            const i = cityList.indexOf(city);
-            cityList = [...cityList.slice(0, i), ...cityList.slice(i + 1)];
-        }
-        localStorage.setItem("cityList", cityList.toString());
-        updateCitiesDisplay(cityList, handleWeatherUpdate, city);
     }
 
     const initEventListeners = () => {
         // Handle event where user searches for a city
         document.getElementById("searchBtn").addEventListener("click", () => {
+            document.getElementById("searchInput").blur();
             const city = document.getElementById("searchInput").value.toLocaleLowerCase("en-us").trim();
             //const city = "seattle";
             if (!cities[city]) return;
        
             // Update local storage
-            updateList("add", city);
+            cityListArr = updateList("add", cityListArr, city);
+            // Update HTML
+            updateCitiesDisplay(cityListArr, handleWeatherUpdate, city);
             // Initialize ajax call
             handleWeatherUpdate(city);
-            document.getElementById("searchInput").blur();
         });
+        // Handle event when user clicks "Enter" when search input field is in focus
         document.getElementById("searchInput").addEventListener("keydown", (event) => {
             if (event.key === "Enter")
                 document.getElementById("searchBtn").click();
         }) 
     }
-    updateCitiesDisplay(cityList, handleWeatherUpdate);
+    updateCitiesDisplay(cityListArr, handleWeatherUpdate, localStorage.getItem("lastViewed"));
     initEventListeners();
 })();
