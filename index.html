@@ -25,10 +25,10 @@
         </div>
     </header>
 
-    <main class="container-fluid p-0 content">
-        <div class="row m-0 h-100">
-            <div class="col-md-3 p-0 h-100">
-                <div class="container-fluid p-3 h-100" id="menu" style="background-color: #eee;">
+    <main class="container-fluid p-0">
+        <div class="row m-0">
+            <div class="col-md-3 p-0">
+                <div class="container-fluid p-3" id="menu">
                     <div class="row mb-3">
                         <label for="searchField" class="form-label mb-1">
                             <h5>Search for a City:</h5>
@@ -40,13 +40,15 @@
                             </button>
                         </div>
                     </div>
-                    <div class="row mb-3 p-sm-1">
-                        <div class="list-group" id="cityList"></div>
+                    <div class="row p-sm-1">
+                        <div class="col">
+                            <div class="list-group" id="cityList"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-9 px-0">
-                <div class="container pt-3" id="weatherInfo" style="display: none">
+                <div class="container-fluid pt-3" id="weatherInfo">
                 </div>
             </div>
         </div>

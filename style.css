@@ -3,8 +3,17 @@
     color: white
 }
 
-@media (min-width: 768px){
-.content {
-    height: 476px
+#menu {
+    height:80vh;
+    background-color: #eee;
+}
+
+#weatherInfo {
+    display: none;
+}
+
+@media (max-width: 768px){
+#menu {
+    height: 100%
 }
 }
