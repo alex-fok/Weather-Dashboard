@@ -31,7 +31,7 @@ const getWeatherObj = (city, data) => {
         today: {
             "name": city,
             "date": getDate(current.dt),
-            "icon": `http://openweathermap.org/img/wn/${current.weather[0].icon}.png`,
+            "icon": `https://openweathermap.org/img/wn/${current.weather[0].icon}.png`,
             "temp": `${current.temp}`,
             "humidity": `${current.humidity}`,
             "windSpeed": `${current.wind_speed}`,
@@ -40,7 +40,7 @@ const getWeatherObj = (city, data) => {
         forecast: daily.slice(1, 6).map(day => {
             return({
                 "date": getDate(day.dt),
-                "icon": `http://openweathermap.org/img/wn/${day.weather[0].icon}.png`,
+                "icon": `https://openweathermap.org/img/wn/${day.weather[0].icon}.png`,
                 "temp": `${day.temp.day}`,
                 "humidity": `${day.humidity}`
             })
