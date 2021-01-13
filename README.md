@@ -6,3 +6,6 @@ Weather Dashboard is a web application designed to display weather condition of 
 
 ## Live URL
 https://alex-fok.github.io/Weather-Dashboard/
+
+## License
+[MIT License](./LICENSE)
